@@ -126,6 +126,27 @@ public class PolyLine extends AbstractDirectionalMultiPointShape<PolyLine>
                 }
                 return true;
             }
+            else if (size == 1)
+            {
+                final PathPartList path = getPathPartList();
+
+                final double headOffset = attr.getHeadOffset();
+                final double tailOffset = attr.getTailOffset();
+
+                m_headOffsetPoint = list.get(0).copy().offset(headOffset, headOffset);
+                path.M(m_headOffsetPoint);
+
+                m_tailOffsetPoint = list.get(0).copy().offset(tailOffset, tailOffset);
+
+                final double corner = getCornerRadius();
+                if (corner <= 0) {
+                    path.L(m_tailOffsetPoint);
+                } else {
+                    list = new Point2DArray(list.get(0).copy(), list.get(0).copy());
+                    Geometry.drawArcJoinedLines(path, list, corner);
+                }
+                return true;
+            }
             return true;
         }
         return false;
