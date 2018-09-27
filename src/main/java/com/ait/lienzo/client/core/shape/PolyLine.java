@@ -88,68 +88,65 @@ public class PolyLine extends AbstractDirectionalMultiPointShape<PolyLine>
     {
         Point2DArray list = attr.getPoints();
 
-        if (null != list)
-        {
-            list = list.noAdjacentPoints();
+        list = list.noAdjacentPoints();
 
-            final int size = list.size();
+        final int size = list.size();
 
-            if (size > 1)
-            {
-                final PathPartList path = getPathPartList();
-
-                final double headOffset = attr.getHeadOffset();
-                final double tailOffset = attr.getTailOffset();
-
-                m_headOffsetPoint = Geometry.getProjection(list.get(0), list.get(1), headOffset);
-                m_tailOffsetPoint = Geometry.getProjection(list.get(size - 1), list.get(size - 2), tailOffset);
-
-                path.M(m_headOffsetPoint);
-
-                final double corner = getCornerRadius();
-
-                if (corner <= 0)
-                {
-                    for (int i = 1; i < size - 1; i++)
-                    {
-                        path.L(list.get(i));
-                    }
-
-                    path.L(m_tailOffsetPoint);
-                }
-                else
-                {
-                    list = list.copy();
-                    list.set(size - 1, m_tailOffsetPoint);
-
-                    Geometry.drawArcJoinedLines(path, list, corner);
-                }
-                return true;
-            }
-            else if (size == 1)
-            {
-                final PathPartList path = getPathPartList();
-
-                final double headOffset = attr.getHeadOffset();
-                final double tailOffset = attr.getTailOffset();
-
-                m_headOffsetPoint = list.get(0).copy().offset(headOffset, headOffset);
-                path.M(m_headOffsetPoint);
-
-                m_tailOffsetPoint = list.get(0).copy().offset(tailOffset, tailOffset);
-
-                final double corner = getCornerRadius();
-                if (corner <= 0) {
-                    path.L(m_tailOffsetPoint);
-                } else {
-                    list = new Point2DArray(list.get(0).copy(), list.get(0).copy());
-                    Geometry.drawArcJoinedLines(path, list, corner);
-                }
-                return true;
-            }
+        if (size == 0) {
             return true;
         }
-        return false;
+
+        final PathPartList path = getPathPartList();
+
+        final double headOffset = attr.getHeadOffset();
+        final double tailOffset = attr.getTailOffset();
+
+        if (size > 1)
+        {
+            m_headOffsetPoint = Geometry.getProjection(list.get(0), list.get(1), headOffset);
+            m_tailOffsetPoint = Geometry.getProjection(list.get(size - 1), list.get(size - 2), tailOffset);
+
+            path.M(m_headOffsetPoint);
+
+            final double corner = getCornerRadius();
+            if (corner <= 0)
+            {
+                for (int i = 1; i < size - 1; i++)
+                {
+                    path.L(list.get(i));
+                }
+
+                path.L(m_tailOffsetPoint);
+            }
+            else
+            {
+                list = list.copy();
+                list.set(size - 1, m_tailOffsetPoint);
+
+                Geometry.drawArcJoinedLines(path, list, corner);
+            }
+        }
+        else if (size == 1)
+        {
+            m_headOffsetPoint = list.get(0).copy().offset(headOffset, headOffset);
+            m_tailOffsetPoint = list.get(0).copy().offset(tailOffset, tailOffset);
+
+            path.M(m_headOffsetPoint);
+
+            final double corner = getCornerRadius();
+            if (corner <= 0)
+            {
+                path.L(m_tailOffsetPoint);
+            }
+            else
+            {
+                list = new Point2DArray(list.get(0).copy(), list.get(0).copy());
+
+                Geometry.drawArcJoinedLines(path, list, corner);
+            }
+        }
+
+        return true;
     }
 
     @Override
